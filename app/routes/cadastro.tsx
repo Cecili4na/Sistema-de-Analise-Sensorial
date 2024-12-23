@@ -1,9 +1,9 @@
+// app/routes/cadastro.tsx
 import { Link } from '@remix-run/react';
 
-export default function IndexPage() {
+export default function CadastroPage() {
   return (
     <div className="min-h-screen bg-[#F0F0E5] flex flex-col">
-      {/* Cabeçalho */}
       <header className="bg-[#8BA989] text-white py-4">
         <div className="container mx-auto px-4 text-center">
           <img 
@@ -14,15 +14,14 @@ export default function IndexPage() {
         </div>
       </header>
 
-      {/* Conteúdo Principal */}
       <main className="flex-grow flex flex-col items-center justify-center px-4 py-8">
         <h1 className="text-2xl font-bold text-[#4A4A4A] mb-12 text-center">
-          Selecione seu perfil de acesso
+          Selecione seu perfil para cadastro
         </h1>
 
         <div className="max-w-3xl w-full space-y-6">
           <Link 
-            to="/login?role=produtor"
+            to="/cadastroProdutor"
             className="block bg-[#A0522D] text-white p-8 rounded-lg 
               hover:opacity-90 transition text-center"
           >
@@ -35,7 +34,7 @@ export default function IndexPage() {
           </Link>
 
           <Link 
-            to="/login?role=analista"
+            to="/cadastroAnalista"
             className="block bg-[#8BA989] text-white p-8 rounded-lg 
               hover:opacity-90 transition text-center"
           >
@@ -49,13 +48,14 @@ export default function IndexPage() {
           </Link>
 
           <Link 
-            to="/login?role=julgador"
+            to="/cadastroJulgador"
             className="block bg-[#C4A484] text-white p-8 rounded-lg 
               hover:opacity-90 transition text-center"
           >
             <div className="mb-2">
               <svg className="w-8 h-8 mx-auto" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z"/>
+                <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm0-2a6 6 0 110-12 6 6 0 010 12z" clipRule="evenodd" />
               </svg>
             </div>
             <div className="text-xl">Julgador</div>
@@ -63,14 +63,13 @@ export default function IndexPage() {
         </div>
 
         <Link 
-          to="/cadastro"
+          to="/"
           className="mt-8 text-[#8BA989] hover:underline"
         >
-          Cadastre-se
+          Voltar
         </Link>
       </main>
 
-      {/* Rodapé */}
       <footer className="bg-[#8BA989] text-white py-4 text-center text-sm">
         <p>© 2024 Plataforma de Análise Sensorial de Laticínios Caprinos</p>
       </footer>

@@ -1,22 +1,24 @@
 import type { Config } from "tailwindcss";
 
 export default {
-  content: ["./app/**/{**,.client,.server}/**/*.{js,jsx,ts,tsx}"],
+  content: ["./app/**/*.{js,jsx,ts,tsx}"],
   theme: {
     extend: {
-      fontFamily: {
-        sans: [
-          "Inter",
-          "ui-sans-serif",
-          "system-ui",
-          "sans-serif",
-          "Apple Color Emoji",
-          "Segoe UI Emoji",
-          "Segoe UI Symbol",
-          "Noto Color Emoji",
-        ],
-      },
-    },
-  },
-  plugins: [],
+      colors: {
+        background: "#F0F0E5",
+        producer: {
+          DEFAULT: "#A0522D",
+          hover: "#8B4513"
+        },
+        analyst: {
+          DEFAULT: "#8BA989",
+          hover: "#6E8F6E"
+        },
+        judge: {
+          DEFAULT: "#C4A484",
+          hover: "#B08B64"
+        }
+      }
+    }
+  }
 } satisfies Config;
