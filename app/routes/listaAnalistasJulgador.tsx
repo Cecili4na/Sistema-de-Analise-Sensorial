@@ -12,7 +12,7 @@ interface Analista {
   registroProfissional: string;
 }
 
-export default function SensoryAnalystsList() {
+export default function ListaAnalistasJulgador() {
   const navigate = useNavigate();
   const [analistas, setAnalistas] = useState<Analista[]>([]);
   const [loading, setLoading] = useState(true);
@@ -20,7 +20,7 @@ export default function SensoryAnalystsList() {
   useEffect(() => {
     if (!firebaseApp) {
       console.error('Firebase app não inicializado');
-      navigate('/login?role=produtor');
+      navigate('/login?role=julgador');
       return;
     }
 
@@ -29,15 +29,15 @@ export default function SensoryAnalystsList() {
     // Verificar autenticação
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
       if (!user) {
-        navigate('/login?role=produtor');
+        navigate('/login?role=julgador');
         return;
       }
 
       // Verificar papel do usuário
       const idTokenResult = await user.getIdTokenResult();
-      if (idTokenResult.claims.role !== 'produtor') {
+      if (idTokenResult.claims.role !== 'julgador') {
         auth.signOut();
-        navigate('/login?role=produtor');
+        navigate('/login?role=julgador');
         return;
       }
 
@@ -63,7 +63,7 @@ export default function SensoryAnalystsList() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F0F0E5]">
-      <header className="bg-[#A0522D] text-white py-4 shrink-0">
+      <header className="bg-[#C4A484] text-white py-4 shrink-0">
         <div className="container mx-auto px-4 flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <img 
@@ -74,8 +74,8 @@ export default function SensoryAnalystsList() {
             <h1 className="text-2xl font-bold">Analistas Sensoriais</h1>
           </div>
           <button
-            onClick={() => navigate('/dashboardProdutor')}
-            className="px-4 py-2 border border-white rounded-lg hover:bg-[#8B4513] transition"
+            onClick={() => navigate('/dashboardJulgador')}
+            className="px-4 py-2 border border-white rounded-lg hover:bg-[#B08B64] transition"
           >
             Voltar
           </button>
@@ -86,7 +86,7 @@ export default function SensoryAnalystsList() {
         <div className="max-w-4xl mx-auto">
           {/* Card - Analistas */}
           <div className="bg-white p-6 rounded-lg shadow-md">
-            <div className="flex items-center space-x-3 text-[#A0522D] mb-6">
+            <div className="flex items-center space-x-3 text-[#C4A484] mb-6">
               <span className="text-2xl">👥</span>
               <h2 className="text-xl font-semibold">Analistas Cadastrados</h2>
             </div>
@@ -105,14 +105,14 @@ export default function SensoryAnalystsList() {
                   <div key={analista.id} className="border-b pb-4">
                     <div className="flex justify-between items-start">
                       <div>
-                        <p className="font-medium text-[#A0522D]">{analista.nome}</p>
+                        <p className="font-medium text-[#C4A484]">{analista.nome}</p>
                         <p className="text-sm text-gray-500">{analista.especialidade}</p>
                         <p className="text-sm text-gray-500">{analista.email}</p>
                         <p className="text-sm text-gray-500">Registro: {analista.registroProfissional}</p>
                       </div>
                       <button
-                        onClick={() => navigate(`/analistaProdutor/${analista.id}`)}
-                        className="text-[#A0522D] text-sm hover:underline"
+                        onClick={() => navigate(`/analistaJulgador/${analista.id}`)}
+                        className="text-[#C4A484] text-sm hover:underline"
                       >
                         Ver perfil
                       </button>
@@ -125,9 +125,9 @@ export default function SensoryAnalystsList() {
         </div>
       </main>
 
-      <footer className="bg-[#A0522D] text-white py-4 text-center text-sm shrink-0">
+      <footer className="bg-[#C4A484] text-white py-4 text-center text-sm shrink-0">
         <p>© 2024 Plataforma de Análise Sensorial de Laticínios Caprinos</p>
       </footer>
     </div>
   );
-}
+} 

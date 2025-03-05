@@ -1,6 +1,19 @@
-import { Link } from '@remix-run/react';
+import { Link, useNavigate } from '@remix-run/react';
+import { json, LoaderFunction } from '@remix-run/node';
+
+type UserRole = 'produtor' | 'analista' | 'julgador';
+
+export const loader: LoaderFunction = async () => {
+  return json({});
+};
 
 export default function IndexPage() {
+  const navigate = useNavigate();
+
+  const handleProfileSelection = (role: UserRole) => {
+    navigate(`/login?role=${role}`);
+  };
+
   return (
     <div className="min-h-screen bg-[#F0F0E5] flex flex-col">
       {/* Cabeçalho */}
@@ -21,9 +34,9 @@ export default function IndexPage() {
         </h1>
 
         <div className="max-w-3xl w-full space-y-6">
-          <Link 
-            to="/login?role=produtor"
-            className="block bg-[#A0522D] text-white p-8 rounded-lg 
+          <button 
+            onClick={() => handleProfileSelection('produtor')}
+            className="w-full bg-[#A0522D] text-white p-8 rounded-lg 
               hover:opacity-90 transition text-center"
           >
             <div className="mb-2">
@@ -32,11 +45,11 @@ export default function IndexPage() {
               </svg>
             </div>
             <div className="text-xl">Produtor</div>
-          </Link>
+          </button>
 
-          <Link 
-            to="/login?role=analista"
-            className="block bg-[#8BA989] text-white p-8 rounded-lg 
+          <button 
+            onClick={() => handleProfileSelection('analista')}
+            className="w-full bg-[#8BA989] text-white p-8 rounded-lg 
               hover:opacity-90 transition text-center"
           >
             <div className="mb-2">
@@ -46,11 +59,11 @@ export default function IndexPage() {
               </svg>
             </div>
             <div className="text-xl">Analista</div>
-          </Link>
+          </button>
 
-          <Link 
-            to="/login?role=julgador"
-            className="block bg-[#C4A484] text-white p-8 rounded-lg 
+          <button 
+            onClick={() => handleProfileSelection('julgador')}
+            className="w-full bg-[#C4A484] text-white p-8 rounded-lg 
               hover:opacity-90 transition text-center"
           >
             <div className="mb-2">
@@ -59,7 +72,7 @@ export default function IndexPage() {
               </svg>
             </div>
             <div className="text-xl">Julgador</div>
-          </Link>
+          </button>
         </div>
 
         <Link 

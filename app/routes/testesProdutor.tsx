@@ -67,9 +67,7 @@ export default function TestsList() {
             </div>
   
             <div className="mt-6 flex justify-end">
-              <button className="bg-[#8B4513] text-white px-4 py-2 rounded hover:opacity-90">
-                Cadastrar Novo Teste
-              </button>
+             
             </div>
           </div>
         </main>
