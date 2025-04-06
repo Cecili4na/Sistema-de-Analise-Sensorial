@@ -29,12 +29,7 @@ const AnalystMenu = () => {
           >
             Testes
           </Link>
-          <Link
-            to="/listaJulgadoresAnalista"
-            className="bg-[#8BA989] hover:bg-[#6a7a6a] text-white font-medium py-3 px-6 rounded-lg block text-center"
-          >
-            Julgadores
-          </Link>
+        
           <Link
             to="/teoriaAnalista"
             className="bg-[#8BA989] hover:bg-[#6a7a6a] text-white font-medium py-3 px-6 rounded-lg block text-center"

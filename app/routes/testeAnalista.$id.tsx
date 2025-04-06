@@ -50,28 +50,49 @@ export default function TestDetails() {
 
   useEffect(() => {
     const carregarDados = async () => {
-      if (!firebaseApp || !id) return;
+      if (!firebaseApp || !id) {
+        console.log('FirebaseApp ou ID não disponível:', { firebaseApp: !!firebaseApp, id });
+        return;
+      }
 
       try {
+        console.log('Iniciando carregamento do teste:', id);
         const db = getFirestore(firebaseApp);
         
         // Carregar dados do teste
+        console.log('Buscando documento na coleção testes');
         const testeDoc = await getDoc(doc(db, 'testes', id));
+        
         if (!testeDoc.exists()) {
-          setError('Teste não encontrado');
-          setLoading(false);
-          return;
+          console.log('Documento não encontrado na coleção testes, buscando em testes_pendentes');
+          const testePendenteDoc = await getDoc(doc(db, 'testes_pendentes', id));
+          
+          if (!testePendenteDoc.exists()) {
+            console.log('Documento não encontrado em nenhuma coleção');
+            setError('Teste não encontrado');
+            setLoading(false);
+            return;
+          }
+          
+          console.log('Documento encontrado em testes_pendentes');
+          const testeData = {
+            id: testePendenteDoc.id,
+            ...testePendenteDoc.data()
+          } as Teste;
+          setTeste(testeData);
+        } else {
+          console.log('Documento encontrado em testes');
+          const testeData = {
+            id: testeDoc.id,
+            ...testeDoc.data()
+          } as Teste;
+          setTeste(testeData);
         }
 
-        const testeData = {
-          id: testeDoc.id,
-          ...testeDoc.data()
-        } as Teste;
-        setTeste(testeData);
-
         // Carregar dados dos julgadores
-        if (testeData.judgeIds && testeData.judgeIds.length > 0) {
-          const julgadoresPromises = testeData.judgeIds.map(judgeId =>
+        if (teste?.judgeIds && teste.judgeIds.length > 0) {
+          console.log('Carregando dados dos julgadores:', teste.judgeIds);
+          const julgadoresPromises = teste.judgeIds.map(judgeId =>
             getDoc(doc(db, 'julgadores', judgeId))
           );
           const julgadoresSnapshots = await Promise.all(julgadoresPromises);
@@ -81,10 +102,11 @@ export default function TestDetails() {
               id: doc.id,
               ...doc.data()
             })) as Julgador[];
+          console.log('Julgadores carregados:', julgadoresData);
           setJulgadores(julgadoresData);
         }
       } catch (error) {
-        console.error('Erro ao carregar dados:', error);
+        console.error('Erro detalhado ao carregar dados:', error);
         setError('Erro ao carregar dados do teste');
       } finally {
         setLoading(false);

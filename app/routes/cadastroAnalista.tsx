@@ -11,8 +11,7 @@ export const action: ActionFunction = async ({ request }) => {
   // Validação dos campos obrigatórios
   const requiredFields = [
     "name", "gender", "birthDate", "email", "password", "phone", "education",
-    "street", "number", "neighborhood", "zipCode", "city", "state",
-    "specialization", "experience"
+    "street", "number", "neighborhood", "zipCode", "city", "state"
   ];
 
   const formValues: Record<string, string> = {};
@@ -42,9 +41,7 @@ export const action: ActionFunction = async ({ request }) => {
           neighborhood: "Bairro",
           zipCode: "CEP",
           city: "Cidade",
-          state: "Estado",
-          specialization: "Especialização",
-          experience: "Experiência"
+          state: "Estado"
         };
         return fieldNames[field] || field;
       }).join(", ")}`
@@ -89,13 +86,30 @@ export const action: ActionFunction = async ({ request }) => {
         state: formValues.state,
         zipCode: formValues.zipCode,
       },
-      specialization: formValues.specialization,
-      experience: formValues.experience,
       role: "analista",
       createdAt: new Date().toISOString(),
     };
 
-    await db.collection("analysts").doc(userRecord.uid).set(analystData);
+    console.log('Tentando salvar dados do analista:', {
+      userId: userRecord.uid,
+      data: analystData
+    });
+
+    try {
+      await db.collection("analists").doc(userRecord.uid).set(analystData);
+      console.log('Dados do analista salvos com sucesso');
+
+      // Verificar se os dados foram salvos
+      const savedDoc = await db.collection("analists").doc(userRecord.uid).get();
+      if (savedDoc.exists) {
+        console.log('Dados salvos verificados:', savedDoc.data());
+      } else {
+        console.log('Documento não encontrado após salvar');
+      }
+    } catch (error) {
+      console.error('Erro ao salvar dados do analista:', error);
+      throw error;
+    }
 
     return redirect("/login?role=analista");
 
@@ -103,17 +117,31 @@ export const action: ActionFunction = async ({ request }) => {
     let errorMessage = "Erro ao cadastrar analista";
     
     if (error instanceof Error) {
+      console.error("Erro detalhado:", error);
       if ('code' in error) {
         const firebaseError = error as { code: string };
-        if (firebaseError.code === "auth/email-already-in-use") {
-          errorMessage = "Este email já está em uso";
-        } else if (firebaseError.code === "auth/weak-password") {
-          errorMessage = "A senha deve ter pelo menos 6 caracteres";
-        } else if (firebaseError.code === "auth/invalid-email") {
-          errorMessage = "Email inválido";
+        switch (firebaseError.code) {
+          case "auth/email-already-in-use":
+          case "auth/email-already-exists":
+            errorMessage = "Este e-mail já está cadastrado em nossa plataforma. Por favor, use outro e-mail ou faça login se já possuir uma conta.";
+            break;
+          case "auth/weak-password":
+            errorMessage = "A senha deve ter pelo menos 6 caracteres para garantir a segurança da sua conta.";
+            break;
+          case "auth/invalid-email":
+            errorMessage = "O e-mail informado não é válido. Por favor, verifique e tente novamente.";
+            break;
+          case "auth/operation-not-allowed":
+            errorMessage = "O cadastro de novos usuários está temporariamente desativado. Por favor, tente novamente mais tarde.";
+            break;
+          case "auth/network-request-failed":
+            errorMessage = "Erro de conexão. Por favor, verifique sua internet e tente novamente.";
+            break;
+          default:
+            errorMessage = "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.";
         }
       } else {
-        errorMessage = error.message;
+        errorMessage = `Erro: ${error.message}`;
       }
     }
 

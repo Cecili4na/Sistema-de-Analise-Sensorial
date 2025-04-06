@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Form, useNavigate } from '@remix-run/react';
 import { getAuth, updateProfile } from 'firebase/auth';
-import { getFirestore, doc, getDoc, updateDoc } from 'firebase/firestore';
+import { getFirestore, doc, getDoc, updateDoc, setDoc } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { firebaseApp } from '~/lib/firebase.client';
 
@@ -34,27 +34,90 @@ export default function AnalystProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
-    if (!firebaseApp) return;
+    if (!firebaseApp) {
+      console.error('Firebase não inicializado');
+      setError('Erro de inicialização do Firebase. Por favor, recarregue a página.');
+      setLoading(false);
+      return;
+    }
     
     const auth = getAuth(firebaseApp);
     const db = getFirestore(firebaseApp);
     
+    console.log('Iniciando verificação de autenticação');
+    
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
+      console.log('Estado de autenticação alterado:', user ? 'Usuário autenticado' : 'Usuário não autenticado');
+      console.log('UID do usuário:', user?.uid);
+      
       if (!user) {
+        console.log('Usuário não autenticado, redirecionando para login');
         navigate('/login?role=analista');
         return;
       }
 
       try {
+        console.log('Tentando carregar dados do usuário:', user.uid);
+        
+        // Verificar se o usuário tem a role correta
+        const idTokenResult = await user.getIdTokenResult();
+        console.log('Claims do usuário:', idTokenResult.claims);
+        
+        // Buscar na coleção analysts
+        console.log('Tentando buscar documento na coleção analysts');
         const userDoc = await getDoc(doc(db, 'analysts', user.uid));
+        console.log('Documento encontrado:', userDoc.exists());
+        console.log('Dados brutos do documento:', userDoc.data());
+        
         if (userDoc.exists()) {
-          setUserData(userDoc.data() as UserData);
+          const data = userDoc.data();
+          console.log('Dados do usuário carregados:', data);
+          setUserData(data as UserData);
           setPhotoURL(user.photoURL);
+        } else {
+          console.log('Documento não encontrado para o usuário:', user.uid);
+          // Tentar criar o documento se não existir
+          console.log('Tentando criar documento inicial...');
+          const initialData = {
+            name: user.displayName || '',
+            email: user.email || '',
+            gender: '',
+            birthDate: '',
+            phone: '',
+            education: '',
+            specialization: '',
+            experience: '',
+            institution: '',
+            address: {
+              street: '',
+              number: '',
+              neighborhood: '',
+              city: '',
+              state: '',
+              zipCode: ''
+            }
+          };
+          await setDoc(doc(db, 'analysts', user.uid), initialData);
+          console.log('Documento inicial criado com sucesso');
+          setUserData(initialData);
         }
         setLoading(false);
       } catch (err) {
         console.error('Erro ao carregar dados:', err);
-        setError('Erro ao carregar dados do perfil');
+        if (err instanceof Error) {
+          console.error('Detalhes do erro:', err.message);
+          console.error('Stack trace:', err.stack);
+          if (err.message.includes('permissions')) {
+            console.error('Erro de permissões detectado. Verificando autenticação...');
+            const currentUser = auth.currentUser;
+            console.log('Usuário atual:', currentUser?.uid);
+            if (currentUser) {
+              const token = await currentUser.getIdToken();
+              console.log('Token obtido com sucesso');
+            }
+          }
+        }
+        setError('Erro ao carregar dados do perfil. Por favor, tente novamente.');
         setLoading(false);
       }
     });

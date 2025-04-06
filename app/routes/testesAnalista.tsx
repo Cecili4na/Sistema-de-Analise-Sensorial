@@ -1,6 +1,7 @@
 import { Link, useNavigate } from '@remix-run/react';
 import { useState, useEffect } from 'react';
-import { getFirestore, collection, query, orderBy, getDocs } from 'firebase/firestore';
+import { getFirestore, collection, query, orderBy, getDocs, where } from 'firebase/firestore';
+import { getAuth } from 'firebase/auth';
 import { firebaseApp } from '~/lib/firebase.client';
 
 interface Teste {
@@ -20,6 +21,19 @@ interface Teste {
   tipoAnaliseEstatistica: string;
   status: string;
   dataCriacao: string;
+  analistaId: string;
+  criadoPor: string;
+  atualizadoEm: string;
+  respostas?: {
+    julgadorId: string;
+    nomeJulgador: string;
+    notas: { [atributo: string]: number };
+    comentarios?: string;
+    intencaoCompra?: string;
+    dataAvaliacao: string;
+  }[];
+  totalRespostas?: number;
+  dataConclusao?: string;
 }
 
 export default function AnalystTests() {
@@ -34,15 +48,54 @@ export default function AnalystTests() {
 
       try {
         const db = getFirestore(firebaseApp);
-        const testesRef = collection(db, 'testes');
-        const q = query(testesRef, orderBy('dataCriacao', 'desc'));
-        const querySnapshot = await getDocs(q);
+        const auth = getAuth(firebaseApp);
+        const user = auth.currentUser;
         
-        const testesData = querySnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        })) as Teste[];
+        if (!user) {
+          navigate('/login');
+          return;
+        }
 
+        console.log('Carregando testes para o usuário:', user.uid);
+
+        // Buscar testes da coleção testes
+        const testesRef = collection(db, 'testes');
+        const qTestes = query(
+          testesRef, 
+          where('analistaId', '==', user.uid)
+        );
+        const querySnapshotTestes = await getDocs(qTestes);
+        console.log('Testes encontrados:', querySnapshotTestes.size);
+        querySnapshotTestes.forEach(doc => {
+          console.log('Teste encontrado:', doc.id, doc.data());
+        });
+        
+        // Buscar testes da coleção testes_pendentes
+        const testesPendentesRef = collection(db, 'testes_pendentes');
+        const qPendentes = query(
+          testesPendentesRef, 
+          where('analistaId', '==', user.uid)
+        );
+        const querySnapshotPendentes = await getDocs(qPendentes);
+        console.log('Testes pendentes encontrados:', querySnapshotPendentes.size);
+        querySnapshotPendentes.forEach(doc => {
+          console.log('Teste pendente encontrado:', doc.id, doc.data());
+        });
+        
+        // Combinar os resultados
+        const testesData = [
+          ...querySnapshotTestes.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          })),
+          ...querySnapshotPendentes.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          }))
+        ] as Teste[];
+
+        console.log('Total de testes combinados:', testesData.length);
+        console.log('Dados dos testes:', testesData);
         setTestes(testesData);
       } catch (error) {
         console.error('Erro ao carregar testes:', error);
@@ -179,6 +232,51 @@ export default function AnalystTests() {
                         ))}
                       </div>
                     </div>
+
+                    {/* Respostas dos Julgadores */}
+                    {teste.respostas && teste.respostas.length > 0 && (
+                      <div>
+                        <h3 className="font-medium text-[#8BA989]">Respostas dos Julgadores</h3>
+                        <div className="mt-4 space-y-4">
+                          {teste.respostas.map((resposta, index) => (
+                            <div key={index} className="bg-gray-50 p-4 rounded-lg">
+                              <div className="flex justify-between items-start mb-2">
+                                <h4 className="font-medium text-gray-700">{resposta.nomeJulgador}</h4>
+                                <span className="text-sm text-gray-500">
+                                  {new Date(resposta.dataAvaliacao).toLocaleDateString('pt-BR')}
+                                </span>
+                              </div>
+                              
+                              <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                  <h5 className="text-sm font-medium text-gray-600 mb-1">Notas:</h5>
+                                  {Object.entries(resposta.notas).map(([atributo, nota]) => (
+                                    <div key={atributo} className="flex justify-between text-sm">
+                                      <span className="text-gray-600">{atributo}:</span>
+                                      <span className="font-medium">{nota}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                                
+                                {resposta.intencaoCompra && (
+                                  <div>
+                                    <h5 className="text-sm font-medium text-gray-600 mb-1">Intenção de Compra:</h5>
+                                    <p className="text-sm">{resposta.intencaoCompra}</p>
+                                  </div>
+                                )}
+                              </div>
+
+                              {resposta.comentarios && (
+                                <div className="mt-2">
+                                  <h5 className="text-sm font-medium text-gray-600 mb-1">Comentários:</h5>
+                                  <p className="text-sm text-gray-600">{resposta.comentarios}</p>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
 
                     <div className="flex justify-end mt-4">
                       <button

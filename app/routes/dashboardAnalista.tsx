@@ -102,23 +102,7 @@ export default function DashboardAnalista() {
             </button>
           </div>
 
-          {/* Card - Julgadores */}
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <div className="flex items-center space-x-3 text-[#8BA989] mb-4">
-              <span className="text-2xl">👥</span>
-              <h2 className="text-xl font-semibold">Julgadores</h2>
-            </div>
-            <p className="text-gray-600 mb-4">
-              Gerencie a equipe de julgadores e acompanhe seu desempenho.
-            </p>
-            <button
-              onClick={() => navigate('/listaJulgadoresAnalista')}
-              className="w-full bg-[#8BA989] text-white py-2 rounded-lg 
-                hover:bg-[#6E8F6E] transition"
-            >
-              Gerenciar Julgadores
-            </button>
-          </div>
+       
 
           {/* Card - Teoria */}
           <div className="bg-white p-6 rounded-lg shadow-md">

@@ -21,12 +21,22 @@ if (typeof window !== "undefined") {
     });
     firebaseApp = initializeApp(firebaseConfig);
     console.log("Firebase inicializado com sucesso");
+    
+    // Verificar se o app foi inicializado corretamente
+    if (firebaseApp) {
+      console.log("Firebase App está disponível");
+    } else {
+      console.error("Firebase App não foi inicializado corretamente");
+    }
   } catch (error) {
     console.error("Erro ao inicializar Firebase:", error);
     if (error instanceof Error) {
       console.error("Detalhes do erro:", error.message);
+      console.error("Stack trace:", error.stack);
     }
   }
+} else {
+  console.log("Firebase não será inicializado no servidor");
 }
 
 export { firebaseApp }; 

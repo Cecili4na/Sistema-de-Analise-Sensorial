@@ -1,37 +1,28 @@
 // app/routes/login.tsx
 import { useState } from 'react';
-import { useSearchParams, useActionData, useNavigate, useSubmit } from '@remix-run/react';
+import { useActionData, useNavigate, useSubmit } from '@remix-run/react';
 import { json, ActionFunction, LoaderFunction, redirect } from "@remix-run/node";
 import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
 import { firebaseApp } from "~/lib/firebase.client";
 
-interface ThemeColors {
-  bg: string;
-  hover: string;
-  text: string;
-  border: string;
-}
-
-type UserRole = 'produtor' | 'analista' | 'julgador';
-
-const roleConfigs: Record<UserRole, ThemeColors> = {
-  produtor: {
-    bg: 'bg-[#A0522D]',
-    hover: 'hover:bg-[#8B4513]',
-    text: 'text-[#A0522D]',
-    border: 'border-[#A0522D]'
-  },
-  analista: {
-    bg: 'bg-[#8BA989]',
-    hover: 'hover:bg-[#6E8F6E]',
+const colors = {
+  primary: {
+    bg: 'bg-[#8BA989]',      // Verde claro
+    hover: 'hover:bg-[#6B8E6B]',
     text: 'text-[#8BA989]',
     border: 'border-[#8BA989]'
   },
-  julgador: {
-    bg: 'bg-[#C4A484]',
-    hover: 'hover:bg-[#B08B64]',
-    text: 'text-[#C4A484]',
-    border: 'border-[#C4A484]'
+  secondary: {
+    bg: 'bg-[#DEB887]',      // Marrom claro (burlywood)
+    hover: 'hover:bg-[#CDA777]',
+    text: 'text-[#DEB887]',
+    border: 'border-[#DEB887]'
+  },
+  accent: {
+    bg: 'bg-[#8B4513]',      // Marrom avermelhado (saddle brown)
+    hover: 'hover:bg-[#7A3503]',
+    text: 'text-[#8B4513]',
+    border: 'border-[#8B4513]'
   }
 };
 
@@ -42,20 +33,13 @@ export const loader: LoaderFunction = async () => {
 export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
   const idToken = formData.get("idToken");
-  const role = formData.get("role");
 
-  if (typeof idToken !== "string" || typeof role !== "string") {
+  if (typeof idToken !== "string") {
     return json({ error: "Dados inválidos" }, { status: 400 });
   }
 
   try {
-    const redirectMap: Record<string, string> = {
-      produtor: "/dashboardProdutor",
-      analista: "/dashboardAnalista",
-      julgador: "/dashboardJulgador"
-    };
-
-    return redirect(redirectMap[role] || "/");
+    return redirect("/dashboardAnalista");
   } catch (error) {
     console.error("Erro ao processar login:", error);
     return json({ error: "Erro ao processar login" }, { status: 500 });
@@ -63,22 +47,15 @@ export const action: ActionFunction = async ({ request }) => {
 };
 
 export default function LoginPage() {
-  const [searchParams] = useSearchParams();
-  const role = searchParams.get("role") || "produtor";
   const actionData = useActionData<typeof action>();
   const navigate = useNavigate();
   const submit = useSubmit();
-  const themeColor = roleConfigs[role as UserRole] || roleConfigs.produtor;
 
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
   const [error, setError] = useState<string | null>(null);
-
-  if (!role || !Object.keys(roleConfigs).includes(role as UserRole)) {
-    return null;
-  }
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -101,9 +78,9 @@ export default function LoginPage() {
         return;
       }
 
-      if (idTokenResult.claims.role !== role) {
+      if (idTokenResult.claims.role !== 'analista') {
         await auth.signOut();
-        setError(`Você não tem permissão para acessar como ${role}`);
+        setError("Você não tem permissão para acessar como analista");
         return;
       }
 
@@ -112,7 +89,6 @@ export default function LoginPage() {
       
       const formDataToSubmit = new FormData();
       formDataToSubmit.append("idToken", idToken);
-      formDataToSubmit.append("role", role);
       
       submit(formDataToSubmit, { method: "post" });
     } catch (error) {
@@ -140,8 +116,8 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-[#F0F0E5] flex flex-col">
-      <header className={themeColor.bg + " text-white py-4"}>
-        <div className="container mx-auto px-4 flex items-center justify-between">
+      <header className={colors.primary.bg + " text-white py-4"}>
+        <div className="container mx-auto px-4 flex items-center justify-center">
           <a href="/" className="flex items-center">
             <img 
               src="/logo-panc.png" 
@@ -149,21 +125,14 @@ export default function LoginPage() {
               className="h-16 w-auto"
             />
           </a>
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            className={`px-4 py-2 border border-white rounded-lg transition ${themeColor.hover}`}
-          >
-            Voltar
-          </button>
         </div>
       </header>
 
       <main className="flex-grow flex items-center justify-center px-4 py-8">
         <div className="w-full max-w-md">
-          <div className={themeColor.bg + " text-white p-6 rounded-t-lg text-center"}>
+          <div className={colors.primary.bg + " text-white p-6 rounded-t-lg text-center"}>
             <h1 className="text-2xl font-bold">
-              Login - {role.charAt(0).toUpperCase() + role.slice(1)}
+              Login
             </h1>
           </div>
 
@@ -190,8 +159,8 @@ export default function LoginPage() {
                     ...prev, 
                     email: e.target.value 
                   }))}
-                  className={`w-full p-3 border rounded-md focus:outline-none focus:ring-2 
-                    focus:ring-${themeColor.text.replace('text-', '')} transition-colors`}
+                  className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 
+                    focus:ring-[#8BA989] transition-colors"
                   required
                   placeholder="seu@email.com"
                 />
@@ -209,8 +178,8 @@ export default function LoginPage() {
                     ...prev, 
                     password: e.target.value 
                   }))}
-                  className={`w-full p-3 border rounded-md focus:outline-none focus:ring-2 
-                    focus:ring-${themeColor.text.replace('text-', '')} transition-colors`}
+                  className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 
+                    focus:ring-[#8BA989] transition-colors"
                   required
                   placeholder="••••••••"
                 />
@@ -220,8 +189,8 @@ export default function LoginPage() {
             <div className="flex flex-col gap-4">
               <button
                 type="submit"
-                className={`${themeColor.bg} text-white px-6 py-3 rounded-lg 
-                  hover:opacity-90 transition w-full`}
+                className={`${colors.primary.bg} text-white px-6 py-3 rounded-lg 
+                  hover:bg-[#6B8E6B] transition w-full font-medium`}
               >
                 Entrar
               </button>
@@ -229,8 +198,8 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => navigate("/")}
-                className="px-6 py-3 text-gray-600 border rounded-lg 
-                  hover:bg-gray-50 transition w-full"
+                className={`px-6 py-3 border ${colors.primary.border} ${colors.primary.text} rounded-lg 
+                  hover:bg-[#8BA989] hover:text-white transition w-full font-medium`}
               >
                 Voltar
               </button>
@@ -239,8 +208,8 @@ export default function LoginPage() {
             <div className="text-center text-sm text-gray-600">
               <span>Não tem uma conta? </span>
               <a 
-                href="/cadastro" 
-                className={themeColor.text + " hover:underline"}
+                href="/cadastroAnalista" 
+                className={`${colors.primary.text} hover:text-[#6B8E6B] hover:underline font-medium`}
               >
                 Cadastre-se
               </a>
@@ -249,7 +218,7 @@ export default function LoginPage() {
         </div>
       </main>
 
-      <footer className={themeColor.bg + " text-white py-4 text-center text-sm mt-8"}>
+      <footer className={colors.primary.bg + " text-white py-4 text-center text-sm mt-8"}>
         <p>© 2024 Plataforma de Análise Sensorial de Laticínios Caprinos</p>
       </footer>
     </div>
