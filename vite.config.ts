@@ -12,13 +12,5 @@ export default defineConfig({
   plugins: [remix(), tsconfigPaths()],
   ssr: {
     noExternal: ["@prisma/client", "prisma"]
-  },
-  optimizeDeps: {
-    exclude: ['rollup']
-  },
-  build: {
-    rollupOptions: {
-      external: ['rollup']
-    }
   }
 });
