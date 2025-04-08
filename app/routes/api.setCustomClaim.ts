@@ -1,7 +1,7 @@
 import { json } from "@remix-run/node";
 import type { ActionFunction } from "@remix-run/node";
 import { getAuth } from "firebase-admin/auth";
-import { getFirebaseAdmin } from "~/lib/firebase.server";
+import { getAdminApp } from "~/lib/firebase.server";
 
 export const action: ActionFunction = async ({ request }) => {
   console.log("Iniciando setCustomClaim...");
@@ -34,7 +34,7 @@ export const action: ActionFunction = async ({ request }) => {
     }
 
     console.log("Inicializando Firebase Admin...");
-    const app = getFirebaseAdmin();
+    const app = getAdminApp();
     console.log("Firebase Admin inicializado");
 
     console.log("Obtendo instância do Auth...");

@@ -4,29 +4,34 @@ const projectId = process.env.FIREBASE_ADMIN_PROJECT_ID;
 const clientEmail = process.env.FIREBASE_ADMIN_CLIENT_EMAIL;
 const privateKey = process.env.FIREBASE_ADMIN_PRIVATE_KEY;
 
-// Inicializar um objeto vazio para o caso de falha
-let adminApp = {};
+let adminApp = null;
 
 function getAdminApp() {
-  // Durante o build, retornar um objeto vazio
-  if (process.env.NODE_ENV === "production" && !projectId) {
-    return {};
-  }
-
   try {
+    // Se já existe uma instância, retorna ela
+    if (adminApp) {
+      return adminApp;
+    }
+
+    // Verifica se já existe um app inicializado
     const apps = getApps();
-    
     if (apps.length > 0) {
-      return getApp();
+      adminApp = getApp();
+      return adminApp;
     }
 
-    // Só inicializar o app se tivermos todas as credenciais
+    // Verifica se todas as credenciais estão presentes
     if (!projectId || !clientEmail || !privateKey) {
-      console.error("Credenciais do Firebase Admin ausentes");
-      return {};
+      console.error("Credenciais do Firebase Admin ausentes:", {
+        projectId: !!projectId,
+        clientEmail: !!clientEmail,
+        privateKey: !!privateKey
+      });
+      throw new Error("Credenciais do Firebase Admin ausentes");
     }
 
-    const app = initializeApp({
+    // Inicializa o app com as credenciais
+    adminApp = initializeApp({
       credential: cert({
         projectId,
         clientEmail,
@@ -34,16 +39,18 @@ function getAdminApp() {
       })
     });
 
-    return app;
+    return adminApp;
   } catch (error) {
     console.error("Erro ao inicializar Firebase Admin:", error);
-    return {};
+    throw error; // Propaga o erro para ser tratado adequadamente
   }
 }
 
-// Inicializar o app apenas se não estivermos em build de produção
-if (process.env.NODE_ENV !== "production" || (process.env.NODE_ENV === "production" && projectId)) {
+// Inicializa o app
+try {
   adminApp = getAdminApp();
+} catch (error) {
+  console.error("Falha ao inicializar Firebase Admin:", error);
 }
 
-export { adminApp, getAdminApp as getFirebaseAdmin }; 
+export { adminApp, getAdminApp }; 

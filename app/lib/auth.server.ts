@@ -3,15 +3,21 @@ import { adminApp } from "./firebase.server";
 import { redirect } from "@remix-run/node";
 
 export async function requireUser(request: Request) {
-  const session = request.headers.get("Cookie")?.split(";")
-    .find(c => c.trim().startsWith("session="))
-    ?.split("=")[1];
-
-  if (!session) {
-    throw redirect("/login");
-  }
-
   try {
+    const session = request.headers.get("Cookie")?.split(";")
+      .find(c => c.trim().startsWith("session="))
+      ?.split("=")[1];
+
+    if (!session) {
+      console.log("Nenhuma sessão encontrada");
+      throw redirect("/login");
+    }
+
+    if (!adminApp) {
+      console.error("Firebase Admin não inicializado");
+      throw new Error("Firebase Admin não inicializado");
+    }
+
     const auth = getAuth(adminApp);
     const decodedToken = await auth.verifySessionCookie(session, true);
     return decodedToken;
