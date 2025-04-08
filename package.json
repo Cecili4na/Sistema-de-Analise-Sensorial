@@ -14,7 +14,6 @@
     "@google-cloud/firestore": "^7.11.0",
     "@remix-run/react": "^2.15.1",
     "@remix-run/serve": "^2.15.1",
-    "@rollup/rollup-darwin-arm64": "^4.39.0",
     "@types/firebase": "^3.2.3",
     "class-variance-authority": "^0.7.1",
     "firebase": "^11.4.0",
