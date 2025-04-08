@@ -22,9 +22,21 @@ export default defineConfig({
     tsconfigPaths(),
   ],
   ssr: {
-    noExternal: ["@prisma/client", "prisma"]
+    noExternal: ["@prisma/client", "prisma", "firebase", "firebase-admin"],
+    optimizeDeps: {
+      include: ["@prisma/client", "prisma", "firebase", "firebase-admin"]
+    }
   },
-  optimizeDeps: {
-    exclude: ["@prisma/client"]
+  build: {
+    rollupOptions: {
+      external: ['@prisma/client', 'prisma', 'firebase', 'firebase-admin'],
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          firebase: ['firebase', 'firebase-admin'],
+          prisma: ['@prisma/client', 'prisma']
+        }
+      }
+    }
   }
 });
