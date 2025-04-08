@@ -9,34 +9,8 @@ declare module "@remix-run/node" {
 }
 
 export default defineConfig({
-  plugins: [
-    remix({
-      future: {
-        v3_fetcherPersist: true,
-        v3_relativeSplatPath: true,
-        v3_throwAbortReason: true,
-        v3_singleFetch: true,
-        v3_lazyRouteDiscovery: true,
-      },
-    }),
-    tsconfigPaths(),
-  ],
+  plugins: [remix(), tsconfigPaths()],
   ssr: {
-    noExternal: ["@prisma/client", "prisma", "firebase", "firebase-admin"],
-    optimizeDeps: {
-      include: ["@prisma/client", "prisma", "firebase", "firebase-admin"]
-    }
-  },
-  build: {
-    rollupOptions: {
-      external: ['@prisma/client', 'prisma', 'firebase', 'firebase-admin'],
-      output: {
-        manualChunks: {
-          vendor: ['react', 'react-dom'],
-          firebase: ['firebase', 'firebase-admin'],
-          prisma: ['@prisma/client', 'prisma']
-        }
-      }
-    }
+    noExternal: ["@prisma/client", "prisma"]
   }
 });
