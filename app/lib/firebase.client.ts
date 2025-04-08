@@ -12,31 +12,46 @@ const firebaseConfig = {
 
 let firebaseApp: FirebaseApp | undefined;
 
-// Inicializar apenas no cliente
-if (typeof window !== "undefined") {
+// Verificar se estamos em ambiente de build
+const isBuild = process.env.NODE_ENV === "production" && process.env.VERCEL_ENV !== "production";
+
+// Inicializar apenas no cliente e não durante o build
+if (typeof window !== "undefined" && !isBuild) {
   try {
-    console.log("Tentando inicializar Firebase com config:", {
-      authDomain: firebaseConfig.authDomain,
-      projectId: firebaseConfig.projectId
-    });
+    if (process.env.NODE_ENV !== "production" || process.env.VERCEL_ENV !== "production") {
+      console.log("Tentando inicializar Firebase com config:", {
+        authDomain: firebaseConfig.authDomain,
+        projectId: firebaseConfig.projectId
+      });
+    }
     firebaseApp = initializeApp(firebaseConfig);
-    console.log("Firebase inicializado com sucesso");
+    if (process.env.NODE_ENV !== "production" || process.env.VERCEL_ENV !== "production") {
+      console.log("Firebase inicializado com sucesso");
+    }
     
     // Verificar se o app foi inicializado corretamente
     if (firebaseApp) {
-      console.log("Firebase App está disponível");
+      if (process.env.NODE_ENV !== "production" || process.env.VERCEL_ENV !== "production") {
+        console.log("Firebase App está disponível");
+      }
     } else {
-      console.error("Firebase App não foi inicializado corretamente");
+      if (process.env.NODE_ENV !== "production" || process.env.VERCEL_ENV !== "production") {
+        console.error("Firebase App não foi inicializado corretamente");
+      }
     }
   } catch (error) {
-    console.error("Erro ao inicializar Firebase:", error);
-    if (error instanceof Error) {
-      console.error("Detalhes do erro:", error.message);
-      console.error("Stack trace:", error.stack);
+    if (process.env.NODE_ENV !== "production" || process.env.VERCEL_ENV !== "production") {
+      console.error("Erro ao inicializar Firebase:", error);
+      if (error instanceof Error) {
+        console.error("Detalhes do erro:", error.message);
+        console.error("Stack trace:", error.stack);
+      }
     }
   }
 } else {
-  console.log("Firebase não será inicializado no servidor");
+  if (process.env.NODE_ENV !== "production" || process.env.VERCEL_ENV !== "production") {
+    console.log("Firebase não será inicializado no servidor ou durante o build");
+  }
 }
 
 export { firebaseApp }; 

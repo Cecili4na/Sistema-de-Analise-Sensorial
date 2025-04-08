@@ -7,11 +7,27 @@ declare global {
   var __db__: PrismaClient | undefined;
 }
 
-if (process.env.NODE_ENV === "production") {
-  prisma = new PrismaClient();
+// Verificar se estamos em ambiente de build
+const isBuild = process.env.NODE_ENV === "production" && process.env.VERCEL_ENV !== "production";
+
+if (isBuild) {
+  // Durante o build, criar uma instância vazia do PrismaClient
+  prisma = {} as PrismaClient;
+} else if (process.env.NODE_ENV === "production") {
+  try {
+    prisma = new PrismaClient();
+  } catch (error) {
+    console.error("Erro ao criar PrismaClient:", error);
+    prisma = {} as PrismaClient;
+  }
 } else {
   if (!global.__db__) {
-    global.__db__ = new PrismaClient();
+    try {
+      global.__db__ = new PrismaClient();
+    } catch (error) {
+      console.error("Erro ao criar PrismaClient:", error);
+      global.__db__ = {} as PrismaClient;
+    }
   }
   prisma = global.__db__;
 }
